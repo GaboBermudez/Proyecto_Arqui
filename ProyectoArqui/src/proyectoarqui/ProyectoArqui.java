@@ -17,5 +17,6 @@ public class ProyectoArqui {
     public static void main(String[] args) {
         // PLAYO
     }
+    public void suma(){}
     
 }
