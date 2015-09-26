@@ -15,9 +15,12 @@ import java.util.concurrent.CyclicBarrier;
 public class ProyectoArqui {
     
     //Esto es lo que no se comparte
+    int PC;
+    int IR;
     int[] registros = new int [32];
     int[][] cacheIntrucciones = new int [25][8];
     int[][] cacheDatos = new int [6][8];
+    
     // Esto es todo lo que se comparte
     public static Semaphore bus;
     public static int[] memoriaInstrucciones = new int[160];
@@ -48,7 +51,17 @@ public class ProyectoArqui {
      */
     public static void main(String[] args) {
 
-    
+        /* 
+        
+        Codigo del hilo principal 
+        
+        */
+        
+        
+        //Codigo de cada hilo
+        
+        
+        
     }
     
 }
