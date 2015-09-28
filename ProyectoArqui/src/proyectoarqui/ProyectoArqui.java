@@ -18,8 +18,7 @@ import java.util.logging.Logger;
 public class ProyectoArqui extends Thread{
     
     //Esto es lo que no se comparte
-    int PC;
-    int IR;
+    
     int[] registros = new int [32];
     int[][] cacheIntrucciones = new int [25][8];
     int[][] cacheDatos = new int [6][8];
@@ -59,17 +58,24 @@ public class ProyectoArqui extends Thread{
     /**
      * 
      */
-    public static synchronized void resolverFalloCache(){
+    public static synchronized void resolverFalloCache(int etiqueta){
+        
+    }
     
+    public static synchronized boolean estaEnCache( int etiqueta ){
+        boolean esta = false;
+        
+        
+        return esta;
     }
     
     /**
      * 
      * @param elPC 
      */
-    public static synchronized void obtenerPC(){
+    public static synchronized int obtenerPC(){
         
-
+        return 0;
     }
     
     public static void  barrera() throws InterruptedException, BrokenBarrierException{
@@ -89,16 +95,22 @@ public class ProyectoArqui extends Thread{
         
         for (int i = 0; i <=2; i++){
           new Thread (""+i){
+              private int PC;
+              private int IR;
             public void run(){
-                obtenerPC();
+                this.PC = obtenerPC();
+                this.IR = this.PC;
+                this.PC = this.PC+4;
+                if(!estaEnCache(this.IR)){
+                    resolverFalloCache(this.IR);
+                }
+                ejecutarInstruccion();
                 try {
                     barrera();
                 } catch (InterruptedException | BrokenBarrierException ex) {
                     Logger.getLogger(ProyectoArqui.class.getName()).log(Level.SEVERE, null, ex);
                 }
                 
-                
-            
             }
           }.start();
         }
