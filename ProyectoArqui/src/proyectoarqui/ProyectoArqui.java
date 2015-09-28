@@ -19,9 +19,7 @@ public class ProyectoArqui extends Thread{
     
     //Esto es lo que no se comparte
     
-    int[] registros = new int [32];
-    int[][] cacheIntrucciones = new int [25][8];
-    int[][] cacheDatos = new int [6][8];
+    
     
     // Esto es todo lo que se comparte
     public static Semaphore bus;
@@ -51,23 +49,9 @@ public class ProyectoArqui extends Thread{
     /**
      * 
      */
-    public static synchronized void pedirBus(){
     
-    }
     
-    /**
-     * 
-     */
-    public static synchronized void resolverFalloCache(int etiqueta){
-        
-    }
     
-    public static synchronized boolean estaEnCache( int etiqueta ){
-        boolean esta = false;
-        
-        
-        return esta;
-    }
     
     /**
      * 
@@ -95,8 +79,27 @@ public class ProyectoArqui extends Thread{
         
         for (int i = 0; i <=2; i++){
           new Thread (""+i){
-              private int PC;
-              private int IR;
+              
+            private int[] registros = new int [32];
+            private int[][] cacheIntrucciones = new int [25][8];
+            private int[][] cacheDatos = new int [6][8];
+            private int PC;
+            private int IR;
+              
+            public boolean estaEnCache( int etiqueta ){
+                boolean esta = false;
+        
+        
+                return esta;
+            }
+            
+    
+            /**
+             * 
+             */
+            public synchronized void resolverFalloCache(int etiqueta){
+        
+            }
             public void run(){
                 this.PC = obtenerPC();
                 this.IR = this.PC;
