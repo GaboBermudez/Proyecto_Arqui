@@ -7,12 +7,15 @@ package proyectoarqui;
 
 
 import java.util.concurrent.Semaphore;
+import java.util.concurrent.BrokenBarrierException;
 import java.util.concurrent.CyclicBarrier;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 /**
  *
  * @author gabobermudez
  */
-public class ProyectoArqui {
+public class ProyectoArqui extends Thread{
     
     //Esto es lo que no se comparte
     int PC;
@@ -25,26 +28,39 @@ public class ProyectoArqui {
     public static Semaphore bus;
     public static int[] memoriaInstrucciones = new int[160];
     public static int[] memoriaDatos = new int [88];
+    public static CyclicBarrier barrier = new CyclicBarrier(3); 
     
     /**
      *  
      */
-    public void traerDatosMemoria( int numeroBloque ){}
+    public static synchronized void traerDatosMemoria( int numeroBloque ){
+    
+    }
+    
+    public static synchronized void cambioContexto (){
+    
+    }
     
     /**
      * 
      */
-    public void ejecutarInstruccion(){}
+    public static synchronized void  ejecutarInstruccion(){
+    
+    }
     
     /**
      * 
      */
-    public void pedirBus(){}
+    public static synchronized void pedirBus(){
+    
+    }
     
     /**
      * 
      */
-    public void resolverFalloCache(){}
+    public static synchronized void resolverFalloCache(){
+    
+    }
     
     /**
      * @param args the command line arguments
@@ -57,8 +73,14 @@ public class ProyectoArqui {
         
         */
         
-        
-        //Codigo de cada hilo
+        for (int i = 1; i <=2; i++){
+          new Thread ("Thread "+ i){
+            public void run(){
+            
+            }
+          }.start();
+        }
+
         
         
         
@@ -95,28 +117,26 @@ public class PruebasHilos extends Thread{
         barrier.await();
     }
     public static void main(String[] args) throws InterruptedException, BrokenBarrierException {
-        
-        
-        
-    System.out.println(Thread.currentThread().getName());
-    for(int i=0; i<2; i++){
-      new Thread("" + i){
-        public void run(){
-          System.out.println("Thread: " + getName() + " running");
-          ponerNumeroEnVector(Integer.parseInt(getName()));
-            try {
-                barrera();
-            } catch (InterruptedException | BrokenBarrierException ex) {
-                Logger.getLogger(PruebasHilos.class.getName()).log(Level.SEVERE, null, ex);
+          
+        System.out.println(Thread.currentThread().getName());
+        for(int i=0; i<2; i++){
+          new Thread("" + i){
+            public void run(){
+              System.out.println("Thread: " + getName() + " running");
+              ponerNumeroEnVector(Integer.parseInt(getName()));
+                try {
+                    barrera();
+                } catch (InterruptedException | BrokenBarrierException ex) {
+                    Logger.getLogger(PruebasHilos.class.getName()).log(Level.SEVERE, null, ex);
+                }
             }
+
+          }.start();
+
         }
-      
-      }.start();
-     
-    }
-    barrier.await();
-    imprimirVector();
-        
+        barrier.await();
+        imprimirVector();
+
     }
     
 }
