@@ -29,6 +29,7 @@ public class ProyectoArqui extends Thread{
     public static int[] memoriaInstrucciones = new int[160];
     public static int[] memoriaDatos = new int [88];
     public static CyclicBarrier barrier = new CyclicBarrier(3); 
+    public static int[] vectorPCs = new int[2];
     
     /**
      *  
@@ -63,23 +64,46 @@ public class ProyectoArqui extends Thread{
     }
     
     /**
+     * 
+     * @param elPC 
+     */
+    public static synchronized void obtenerPC(){
+        
+
+    }
+    
+    public static void  barrera() throws InterruptedException, BrokenBarrierException{
+        barrier.await();
+    }
+        
+    public static void ponerPCs(){
+    
+    }    
+    
+    /**
      * @param args the command line arguments
      */
     public static void main(String[] args) {
 
-        /* 
+
         
-        Codigo del hilo principal 
-        
-        */
-        
-        for (int i = 1; i <=2; i++){
-          new Thread ("Thread "+ i){
+        for (int i = 0; i <=2; i++){
+          new Thread (""+i){
             public void run(){
+                obtenerPC();
+                try {
+                    barrera();
+                } catch (InterruptedException | BrokenBarrierException ex) {
+                    Logger.getLogger(ProyectoArqui.class.getName()).log(Level.SEVERE, null, ex);
+                }
+                
+                
             
             }
           }.start();
         }
+        
+       
 
         
         
