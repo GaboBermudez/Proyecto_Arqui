@@ -27,6 +27,11 @@ public class ProyectoArqui extends Thread{
     public static int[] memoriaDatos = new int [88];
     public static CyclicBarrier barrier = new CyclicBarrier(3); 
     public static int[] vectorPCs = new int[2];
+    public static int clock;
+    public static int[][] cacheIntruccionesNucleo1 = new int [25][8];
+    public static int[][] cacheDatosNucleo1 = new int [6][8];
+    public static int[][] cacheIntruccionesNucleo2 = new int [25][8];
+    public static int[][] cacheDatosNucleo2 = new int [6][8];
     
     /**
      *  
@@ -35,9 +40,7 @@ public class ProyectoArqui extends Thread{
     
     }
     
-    public static synchronized void cambioContexto (){
-    
-    }
+
     
     /**
      * 
@@ -45,13 +48,7 @@ public class ProyectoArqui extends Thread{
     public static synchronized void  ejecutarInstruccion(){
     
     }
-    
-    /**
-     * 
-     */
-    
-    
-    
+
     
     /**
      * 
@@ -80,9 +77,9 @@ public class ProyectoArqui extends Thread{
         for (int i = 0; i <=2; i++){
           new Thread (""+i){
               
+            private int miQuantum;
             private int[] registros = new int [32];
-            private int[][] cacheIntrucciones = new int [25][8];
-            private int[][] cacheDatos = new int [6][8];
+
             private int PC;
             private int IR;
               
@@ -97,15 +94,47 @@ public class ProyectoArqui extends Thread{
             /**
              * 
              */
-            public synchronized void resolverFalloCache(int etiqueta){
+            public synchronized void resolverFalloCache(int etiqueta, int nucleo){
+                while(!bus.tryAcquire()){
+                    this.miQuantum--;
+                    try {
+                        barrera();
+                    } catch (InterruptedException | BrokenBarrierException ex) {
+                        Logger.getLogger(ProyectoArqui.class.getName()).log(Level.SEVERE, null, ex);
+                    }
+                }
+                
+                int i = etiqueta % 8;
+                int j = 0;
+                
+                if (nucleo == 0){
+                    for(int n = etiqueta; n < etiqueta+24;n++){
+                        cacheIntruccionesNucleo1[i][j] = memoriaInstrucciones[n];
+                        j++;
+                    }
+                    cacheIntruccionesNucleo1[i][j] = etiqueta;
+                }
+                else if (nucleo == 1){
+                    for(int n = etiqueta; n < etiqueta+24;n++){
+                        cacheIntruccionesNucleo2[i][j] = memoriaInstrucciones[n];
+                        j++;
+                    }
+                    cacheIntruccionesNucleo2[i][j] = etiqueta;
+                }
+               
         
             }
+            
+            private  void cambioContexto (){
+    
+            }
+            
             public void run(){
                 this.PC = obtenerPC();
                 this.IR = this.PC;
                 this.PC = this.PC+4;
                 if(!estaEnCache(this.IR)){
-                    resolverFalloCache(this.IR);
+                    resolverFalloCache(this.IR, Integer.parseInt(this.getName()));
                 }
                 ejecutarInstruccion();
                 try {
@@ -118,10 +147,9 @@ public class ProyectoArqui extends Thread{
           }.start();
         }
         
-       
 
         
-        
+     
         
     }
     
