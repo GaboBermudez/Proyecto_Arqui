@@ -6,7 +6,13 @@
 package proyectoarqui;
 
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.Queue;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.BrokenBarrierException;
@@ -40,13 +46,16 @@ public class ProyectoArqui extends Thread{
     private static int IRN1;
     private static int PCN2;
     private static int IRN2;
-    public Queue<contexto> cola = new LinkedList<>();
+    private static int ProcessIDN1;
+    private static int ProcessIDN2;
+    private static Queue<Contexto> colaContextos = new LinkedList<>();
+    private static Queue<Integer> colaProcesos = new LinkedList<>();
 
-    private class contexto {
+    private static class Contexto {
         private int PC;
         private int[] registros = new int[32];
 
-        public contexto(int[] registros, int PC){
+        public Contexto(int[] registros, int PC){
             this.PC = PC;
             System.arraycopy(registros, 0, this.registros, 0, 32);
         }
@@ -67,32 +76,63 @@ public class ProyectoArqui extends Thread{
 
     }
 
-    public void cargarMemoria(){
-
-
+    public void cargarMemoriaInstrucciones(){
+        
+        int bloqueMemoria = 0;
+        for(int i = 1; i <= 6; ++i){
+            try {
+            List<Integer> instrucciones = new ArrayList<>();
+            for (String line : Files.readAllLines(Paths.get(i+".txt"))) {
+                for (String part : line.split("\\s+")) {
+                    Integer inst = Integer.valueOf(part);
+                    instrucciones.add(inst);
+                }
+            }
+            
+            for (int ins : instrucciones){
+                memoriaInstrucciones[bloqueMemoria] = ins;
+                ++bloqueMemoria;
+            }
+            
+            } catch (IOException ex) {
+                Logger.getLogger(ProyectoArqui.class.getName()).log(Level.SEVERE, null, ex);
+            }
+            int[] reg = new int[32];
+            Arrays.fill(reg,0);
+            Contexto contexto = new Contexto(reg, bloqueMemoria);
+            colaContextos.add(contexto);
+            colaProcesos.add(i);
+        }
+        
     }
-
-    /**
-     *
-     */
-
-
 
     /**
      *
      * @param elPC
      */
-    public static synchronized int obtenerPC(){
-
-        return 0;
+    public static void cambioDeContexto(int nucleo){
+        if (nucleo ==0){ //Nucleo 1
+            Contexto contexto = new Contexto(registrosNucleo1,PCN1);
+            colaContextos.add(contexto);
+            colaProcesos.add(ProcessIDN1);
+            
+            Contexto contextoNuevo = colaContextos.poll();
+            PCN1 = contextoNuevo.getPC();
+            System.arraycopy(contextoNuevo.getRegistros(), 0, registrosNucleo1, 0, 32);
+        }
+        else {
+            Contexto contexto = new Contexto(registrosNucleo2,PCN2);
+            colaContextos.add(contexto);
+            colaProcesos.add(ProcessIDN2);
+            
+            Contexto contextoNuevo = colaContextos.poll();
+            PCN2 = contextoNuevo.getPC();
+            System.arraycopy(contextoNuevo.getRegistros(), 0, registrosNucleo2, 0, 32);
+        }
     }
 
     public static void  barrera() throws InterruptedException, BrokenBarrierException{
         barrier.await();
-    }
-
-    public static void ponerPCs(){
-
     }
 
     /**
@@ -225,6 +265,7 @@ public class ProyectoArqui extends Thread{
 
             }
 
+            @Override
             public void run(){
                 int numNucleo = Integer.parseInt(this.getName());
 
