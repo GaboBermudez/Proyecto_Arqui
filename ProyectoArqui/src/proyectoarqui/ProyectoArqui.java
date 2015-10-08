@@ -6,6 +6,8 @@
 package proyectoarqui;
 
 
+import java.util.LinkedList;
+import java.util.Queue;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.BrokenBarrierException;
 import java.util.concurrent.CyclicBarrier;
@@ -16,97 +18,130 @@ import java.util.logging.Logger;
  * @author gabobermudez
  */
 public class ProyectoArqui extends Thread{
-    
+
     //Esto es lo que no se comparte
-    
-    
-    
+
+
+
     // Esto es todo lo que se comparte
     public static Semaphore bus;
     public static int[] memoriaInstrucciones = new int[160];
     public static int[] memoriaDatos = new int [88];
-    public static CyclicBarrier barrier = new CyclicBarrier(3); 
+    public static CyclicBarrier barrier = new CyclicBarrier(3);
     public static int[] vectorPCs = new int[2];
     public static int clock;
     public static int[][] cacheIntruccionesNucleo1 = new int [25][8];
     public static int[][] cacheDatosNucleo1 = new int [6][8];
     public static int[][] cacheIntruccionesNucleo2 = new int [25][8];
     public static int[][] cacheDatosNucleo2 = new int [6][8];
-    
+    public static int[] registrosNucleo1 = new int [32];
+    public static int[] registrosNucleo2 = new int [32];
+    private static int PCN1;
+    private static int IRN1;
+    private static int PCN2;
+    private static int IRN2;
+    public Queue<contexto> cola = new LinkedList<>();
+
+    private class contexto {
+        private int PC;
+        private int[] registros = new int[32];
+
+        public contexto(int[] registros, int PC){
+            this.PC = PC;
+            System.arraycopy(registros, 0, this.registros, 0, 32);
+        }
+
+        public int getPC(){
+            return this.PC;
+        }
+
+        public int[] getRegistros(){
+            return this.registros;
+        }
+    }
+
     /**
-     *  
+     *
      */
     public static synchronized void traerDatosMemoria( int numeroBloque ){
-    
-    }
-    
 
-    
+    }
+
+    public void cargarMemoria(){
+
+
+    }
+
     /**
-     * 
+     *
      */
-    public static synchronized void  ejecutarInstruccion(){
-    
-    }
 
-    
+
+
     /**
-     * 
-     * @param elPC 
+     *
+     * @param elPC
      */
     public static synchronized int obtenerPC(){
-        
+
         return 0;
     }
-    
+
     public static void  barrera() throws InterruptedException, BrokenBarrierException{
         barrier.await();
     }
-        
+
     public static void ponerPCs(){
-    
-    }    
-    
+
+    }
+
     /**
      * @param args the command line arguments
      */
     public static void main(String[] args) {
 
-
-        
         for (int i = 0; i <=2; i++){
           new Thread (""+i){
-              
+
             private int miQuantum;
             private int[] registros = new int [32];
 
-            private int PC;
-            private int IR;
-              
-            public boolean estaEnCache( int etiqueta ){
-                boolean esta = false;
-        
-        
-                return esta;
+
+
+
+            private boolean estaEnCache( int etiqueta, int nucleo ){
+                boolean estaBloqueEnCache = false;
+                int bloque = etiqueta%8;
+                if(nucleo == 0 ){
+                    if(cacheIntruccionesNucleo1[bloque][24] == etiqueta ){
+                        estaBloqueEnCache = true;
+                     }
+                }
+                if(nucleo == 1){
+                    if(cacheIntruccionesNucleo2[bloque][24] == etiqueta ){
+                        estaBloqueEnCache = true;
+                     }
+                }
+
+                return estaBloqueEnCache;
             }
-            
-    
+
+
             /**
-             * 
+             *
              */
             public synchronized void resolverFalloCache(int etiqueta, int nucleo){
                 while(!bus.tryAcquire()){
-                    this.miQuantum--;
                     try {
                         barrera();
                     } catch (InterruptedException | BrokenBarrierException ex) {
                         Logger.getLogger(ProyectoArqui.class.getName()).log(Level.SEVERE, null, ex);
                     }
                 }
-                
+
                 int i = etiqueta % 8;
                 int j = 0;
-                
+
                 if (nucleo == 0){
                     for(int n = etiqueta; n < etiqueta+24;n++){
                         cacheIntruccionesNucleo1[i][j] = memoriaInstrucciones[n];
@@ -121,43 +156,112 @@ public class ProyectoArqui extends Thread{
                     }
                     cacheIntruccionesNucleo2[i][j] = etiqueta;
                 }
-               
-        
+
+
             }
-            
+
+            public  void  ejecutarInstruccion(int [] instruccion, int nucleo){
+                if(nucleo == 0){
+                    switch(instruccion[0]){
+                        case 8:
+                            registrosNucleo1[instruccion[1]] = registrosNucleo1[instruccion[2]]+instruccion[3];
+                        case 32:
+                            registrosNucleo1[instruccion[1]] = registrosNucleo1[instruccion[2]]+registrosNucleo1[instruccion[3]];
+                        case 34:
+                            registrosNucleo1[instruccion[1]] = registrosNucleo1[instruccion[2]]-registrosNucleo1[instruccion[3]];
+                        case 12:
+                            registrosNucleo1[instruccion[1]] = registrosNucleo1[instruccion[2]]*registrosNucleo1[instruccion[3]];
+                        case 14:
+                            registrosNucleo1[instruccion[1]] = registrosNucleo1[instruccion[2]]/registrosNucleo1[instruccion[3]];
+                        case 4:
+                            if(instruccion[1]==0){
+                                PCN1 = instruccion[3];
+                            }
+                        case 5:
+                            if(instruccion[1]!=0){
+                                PCN1 = instruccion[3];
+                            }
+                        case 3:
+                            registrosNucleo1[31] = PCN1;
+                            PCN1+=instruccion[3];
+                        case 2:
+                            PCN1 = registrosNucleo1[instruccion[1]];
+                        default:
+                            System.out.println("Fallo al ejecutar instruccion "+instruccion[0]);
+                    }
+                }
+                else{
+                    switch(instruccion[0]){
+                        case 8:
+                            registrosNucleo2[instruccion[1]] = registrosNucleo2[instruccion[2]]+instruccion[3];
+                        case 32:
+                            registrosNucleo2[instruccion[1]] = registrosNucleo2[instruccion[2]]+registrosNucleo2[instruccion[3]];
+                        case 34:
+                            registrosNucleo2[instruccion[1]] = registrosNucleo2[instruccion[2]]-registrosNucleo2[instruccion[3]];
+                        case 12:
+                            registrosNucleo2[instruccion[1]] = registrosNucleo2[instruccion[2]]*registrosNucleo2[instruccion[3]];
+                        case 14:
+                            registrosNucleo2[instruccion[1]] = registrosNucleo2[instruccion[2]]/registrosNucleo2[instruccion[3]];
+                        case 4:
+                            if(instruccion[1]==0){
+                                PCN2 = instruccion[3];
+                            }
+                        case 5:
+                            if(instruccion[1]!=0){
+                                PCN2 = instruccion[3];
+                            }
+                        case 3:
+                            registrosNucleo2[31] = PCN2;
+                            PCN2+=instruccion[3];
+                        case 2:
+                            PCN2 = registrosNucleo2[instruccion[1]];
+                        default:
+                            System.out.println("Fallo al ejecutar instruccion "+instruccion[0]);
+                    }
+                }
+
+            }
             private  void cambioContexto (){
-    
+
             }
-            
+
             public void run(){
+                int numNucleo = Integer.parseInt(this.getName());
+
+                if (numNucleo == 0){
+
+
+                }
+                /*
                 this.PC = obtenerPC();
+                do{
                 this.IR = this.PC;
                 this.PC = this.PC+4;
-                if(!estaEnCache(this.IR)){
-                    resolverFalloCache(this.IR, Integer.parseInt(this.getName()));
-                }
-                ejecutarInstruccion();
+
+                if(!estaEnCache(this.IR,Integer.parseInt(this.getName()))){
+                    resolverFalloCache(this.IR,Integer.parseInt(this.getName()));
+                }*/
+               // ejecutarInstruccion();
                 try {
                     barrera();
                 } catch (InterruptedException | BrokenBarrierException ex) {
                     Logger.getLogger(ProyectoArqui.class.getName()).log(Level.SEVERE, null, ex);
                 }
-                
+
+
+              //  }while(true);
+
             }
           }.start();
         }
-        
 
-        
-     
-        
     }
-    
+
 }
 
 /**
  * EJEMPLO DE COMO SINCRONIZAR VARAS JAJAJA
- * 
+ *
 package pruebashilos;
 import java.util.concurrent.BrokenBarrierException;
 import java.util.concurrent.CyclicBarrier;
@@ -166,14 +270,14 @@ import java.util.logging.Logger;
 
 public class PruebasHilos extends Thread{
 
-    
+
     public static int [] m_vector = new int[2];
     public static CyclicBarrier barrier = new CyclicBarrier(3);
-    
+
     public static synchronized void ponerNumeroEnVector(int i ){
         m_vector[i] = i;
     }
-    
+
     public static void imprimirVector(){
         System.out.println("Imprimiendo vector");
         for(int i =0; i< m_vector.length;++i){
@@ -184,7 +288,7 @@ public class PruebasHilos extends Thread{
         barrier.await();
     }
     public static void main(String[] args) throws InterruptedException, BrokenBarrierException {
-          
+
         System.out.println(Thread.currentThread().getName());
         for(int i=0; i<2; i++){
           new Thread("" + i){
@@ -205,7 +309,7 @@ public class PruebasHilos extends Thread{
         imprimirVector();
 
     }
-    
+
 }
 
  */
