@@ -106,12 +106,21 @@ public class ProyectoArqui extends Thread{
         
     }
 
-    /**
-     *
-     * @param elPC
-     */
+
+    public static void iniciarNucleos(){
+        //Carga Nucleo 1
+        Contexto contextoNucleo1 = colaContextos.poll();
+        PCN1 = contextoNucleo1.getPC();
+        System.arraycopy(contextoNucleo1.getRegistros(), 0, registrosNucleo1, 0, 32);
+        //Carga Nucleo 2
+        Contexto contextoNucleo2 = colaContextos.poll();
+        PCN1 = contextoNucleo2.getPC();
+        System.arraycopy(contextoNucleo2.getRegistros(), 0, registrosNucleo1, 0, 32);
+    }
+    
+    
     public static void cambioDeContexto(int nucleo){
-        if (nucleo ==0){ //Nucleo 1
+        if (nucleo == 0){ //Nucleo 1
             Contexto contexto = new Contexto(registrosNucleo1,PCN1);
             colaContextos.add(contexto);
             colaProcesos.add(ProcessIDN1);
@@ -120,7 +129,7 @@ public class ProyectoArqui extends Thread{
             PCN1 = contextoNuevo.getPC();
             System.arraycopy(contextoNuevo.getRegistros(), 0, registrosNucleo1, 0, 32);
         }
-        else {
+        else { //Nucleo 2
             Contexto contexto = new Contexto(registrosNucleo2,PCN2);
             colaContextos.add(contexto);
             colaProcesos.add(ProcessIDN2);
