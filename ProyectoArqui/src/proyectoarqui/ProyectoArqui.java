@@ -8,12 +8,14 @@ package proyectoarqui;
 
 import java.io.IOException;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Queue;
+import java.util.Scanner;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.BrokenBarrierException;
 import java.util.concurrent.CyclicBarrier;
@@ -75,16 +77,20 @@ public class ProyectoArqui extends Thread{
         int bloqueMemoria = 0;
         for(int i = 1; i <= 6; ++i){
             try {
+            Path filePath = Paths.get("C:\\Users\\Ricardo Aguilar\\Desktop\\Universidad\\2015\\2-2015\\Arqui\\Proyecto_Arqui\\ProyectoArqui\\src\\proyectoarqui\\"+i+".txt");
+            Scanner scanner = new Scanner(filePath);
             List<Integer> instrucciones = new ArrayList<>();
-            for (String line : Files.readAllLines(Paths.get(i+".txt"))) {
-                for (String part : line.split("\\s+")) {
-                    Integer inst = Integer.valueOf(part);
-                    instrucciones.add(inst);
-                }
+            while (scanner.hasNext()) {
+                if (scanner.hasNextInt()) {
+                    instrucciones.add(scanner.nextInt());
+                } else {
+                scanner.next();
+              }
             }
             
             for (int ins : instrucciones){
-                memoriaInstrucciones[bloqueMemoria] = ins;
+                System.out.println(ins+" "+ "bloque "+bloqueMemoria);
+                //memoriaInstrucciones[bloqueMemoria] = ins;
                 ++bloqueMemoria;
             }
             
@@ -270,9 +276,6 @@ public class ProyectoArqui extends Thread{
                     }
                 }
                 this.miQuantum--;
-
-            }
-            private  void cambioContexto (){
 
             }
             private int[] obtenerInstruccion( int PC, int bloque ,int self){
