@@ -38,9 +38,9 @@ public class ProyectoArqui extends Thread{
     public static CyclicBarrier barrier = new CyclicBarrier(3);
     public static int[] vectorPCs = new int[2];
     public static int clock;
-    public static int[][] cacheInstruccionesNucleo1 = new int [25][8];
+    public static int[][] cacheInstruccionesNucleo1 = new int [8][25];
     public static int[][] cacheDatosNucleo1 = new int [6][8];
-    public static int[][] cacheInstruccionesNucleo2 = new int [25][8];
+    public static int[][] cacheInstruccionesNucleo2 = new int [8][25];
     public static int[][] cacheDatosNucleo2 = new int [6][8];
     public static int[] registrosNucleo1 = new int [32];
     public static int[] registrosNucleo2 = new int [32];
