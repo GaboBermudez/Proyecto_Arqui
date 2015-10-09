@@ -33,7 +33,7 @@ public class ProyectoArqui extends Thread{
 
     // Esto es todo lo que se comparte
     public static Semaphore bus;
-    public static int[] memoriaInstrucciones = new int[160];
+    public static int[] memoriaInstrucciones = new int[640];
     public static int[] memoriaDatos = new int [88];
     public static CyclicBarrier barrier = new CyclicBarrier(3);
     public static int[] vectorPCs = new int[2];
@@ -87,10 +87,8 @@ public class ProyectoArqui extends Thread{
                 scanner.next();
               }
             }
-            
             for (int ins : instrucciones){
-                System.out.println(ins+" "+ "bloque "+bloqueMemoria);
-                //memoriaInstrucciones[bloqueMemoria] = ins;
+                memoriaInstrucciones[bloqueMemoria] = ins;           
                 ++bloqueMemoria;
             }
             
@@ -160,12 +158,13 @@ public class ProyectoArqui extends Thread{
     public static void main(String[] args) {
         cargarMemoriaInstrucciones();
         iniciarNucleos();
-        for (int i = 0; i <=2; i++){
+        for (int i = 0; i <2; i++){
           new Thread (""+i){
 
             private int miQuantum;
             
             private boolean estaEnCache( int etiqueta, int nucleo ){
+                System.out.println("etiqueta "+etiqueta+" Nucleo "+nucleo);
                 boolean estaBloqueEnCache = false;
                 int bloque = etiqueta%8;
                 if(nucleo == 0 ){
