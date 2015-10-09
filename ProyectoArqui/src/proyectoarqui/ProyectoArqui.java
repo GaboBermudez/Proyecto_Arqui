@@ -36,9 +36,9 @@ public class ProyectoArqui extends Thread{
     public static CyclicBarrier barrier = new CyclicBarrier(3);
     public static int[] vectorPCs = new int[2];
     public static int clock;
-    public static int[][] cacheIntruccionesNucleo1 = new int [25][8];
+    public static int[][] cacheInstruccionesNucleo1 = new int [25][8];
     public static int[][] cacheDatosNucleo1 = new int [6][8];
-    public static int[][] cacheIntruccionesNucleo2 = new int [25][8];
+    public static int[][] cacheInstruccionesNucleo2 = new int [25][8];
     public static int[][] cacheDatosNucleo2 = new int [6][8];
     public static int[] registrosNucleo1 = new int [32];
     public static int[] registrosNucleo2 = new int [32];
@@ -69,14 +69,8 @@ public class ProyectoArqui extends Thread{
         }
     }
 
-    /**
-     *
-     */
-    public static synchronized void traerDatosMemoria( int numeroBloque ){
 
-    }
-
-    public void cargarMemoriaInstrucciones(){
+    public static void cargarMemoriaInstrucciones(){
         
         int bloqueMemoria = 0;
         for(int i = 1; i <= 6; ++i){
@@ -102,6 +96,11 @@ public class ProyectoArqui extends Thread{
             Contexto contexto = new Contexto(reg, bloqueMemoria);
             colaContextos.add(contexto);
             colaProcesos.add(i);
+        }
+        
+        for(int i =0 ; i < memoriaInstrucciones.length; ++i){
+            System.out.print(memoriaInstrucciones[i]+" ");
+            if(i%16 == 0){System.out.println();}
         }
         
     }
@@ -138,6 +137,11 @@ public class ProyectoArqui extends Thread{
             PCN2 = contextoNuevo.getPC();
             System.arraycopy(contextoNuevo.getRegistros(), 0, registrosNucleo2, 0, 32);
         }
+        try {
+            barrera();
+        } catch (InterruptedException | BrokenBarrierException ex) {
+            Logger.getLogger(ProyectoArqui.class.getName()).log(Level.SEVERE, null, ex);
+        }
     }
 
     public static void  barrera() throws InterruptedException, BrokenBarrierException{
@@ -148,26 +152,23 @@ public class ProyectoArqui extends Thread{
      * @param args the command line arguments
      */
     public static void main(String[] args) {
-
+        cargarMemoriaInstrucciones();
+        iniciarNucleos();
         for (int i = 0; i <=2; i++){
           new Thread (""+i){
 
             private int miQuantum;
-            private int[] registros = new int [32];
-
-
-
-
+            
             private boolean estaEnCache( int etiqueta, int nucleo ){
                 boolean estaBloqueEnCache = false;
                 int bloque = etiqueta%8;
                 if(nucleo == 0 ){
-                    if(cacheIntruccionesNucleo1[bloque][24] == etiqueta ){
+                    if(cacheInstruccionesNucleo1[bloque][24] == etiqueta ){
                         estaBloqueEnCache = true;
                      }
                 }
                 if(nucleo == 1){
-                    if(cacheIntruccionesNucleo2[bloque][24] == etiqueta ){
+                    if(cacheInstruccionesNucleo2[bloque][24] == etiqueta ){
                         estaBloqueEnCache = true;
                      }
                 }
@@ -193,17 +194,17 @@ public class ProyectoArqui extends Thread{
 
                 if (nucleo == 0){
                     for(int n = etiqueta; n < etiqueta+24;n++){
-                        cacheIntruccionesNucleo1[i][j] = memoriaInstrucciones[n];
+                        cacheInstruccionesNucleo1[i][j] = memoriaInstrucciones[n];
                         j++;
                     }
-                    cacheIntruccionesNucleo1[i][j] = etiqueta;
+                    cacheInstruccionesNucleo1[i][j] = etiqueta;
                 }
                 else if (nucleo == 1){
                     for(int n = etiqueta; n < etiqueta+24;n++){
-                        cacheIntruccionesNucleo2[i][j] = memoriaInstrucciones[n];
+                        cacheInstruccionesNucleo2[i][j] = memoriaInstrucciones[n];
                         j++;
                     }
-                    cacheIntruccionesNucleo2[i][j] = etiqueta;
+                    cacheInstruccionesNucleo2[i][j] = etiqueta;
                 }
 
 
@@ -268,36 +269,63 @@ public class ProyectoArqui extends Thread{
                             System.out.println("Fallo al ejecutar instruccion "+instruccion[0]);
                     }
                 }
+                this.miQuantum--;
 
             }
             private  void cambioContexto (){
 
             }
+            private int[] obtenerInstruccion( int PC, int bloque ,int self){
+                int numPalabra;
+                numPalabra = (PC%16)/4;
+                int[] palabra = new int[4] ;
+                
+                if(self == 0){ //Es el Nucleo 1
+                    System.arraycopy(cacheInstruccionesNucleo1[bloque], numPalabra, palabra, 0, 4);
+                }
+                else{
+                    System.arraycopy(cacheInstruccionesNucleo2[bloque], numPalabra, palabra, 0, 4);
+                }
+                return palabra;
+            }
 
-            @Override
+            
             public void run(){
                 int numNucleo = Integer.parseInt(this.getName());
+                while(!colaProcesos.isEmpty()){
+                    if (numNucleo == 0){
+                        IRN1 = PCN1;
+                        int bloque = PCN1/16;
+                        PCN1 +=4;
+                        if(!estaEnCache(bloque, numNucleo)){
+                           resolverFalloCache(bloque, numNucleo); 
+                        }
 
-                if (numNucleo == 0){
+                        int [] instruccion;
+                        instruccion = obtenerInstruccion(PCN1, bloque, numNucleo);
+                        ejecutarInstruccion( instruccion  , numNucleo );
 
+                    }else{
+                         IRN1 = PCN1;
+                        int bloque = PCN1/16;
+                        PCN1 +=4;
+                        if(!estaEnCache(bloque, numNucleo)){
+                           resolverFalloCache(bloque, numNucleo); 
+                        }
 
+                        int [] instruccion;
+                        instruccion = obtenerInstruccion(PCN1, bloque, numNucleo);
+                        ejecutarInstruccion( instruccion  , numNucleo );
+                    }
+                    if(this.miQuantum == 0){
+                        cambioDeContexto(Integer.parseInt(this.getName()));
+                    }
+                    try {
+                        barrera();
+                    } catch (InterruptedException | BrokenBarrierException ex) {
+                        Logger.getLogger(ProyectoArqui.class.getName()).log(Level.SEVERE, null, ex);
+                    }
                 }
-                /*
-                this.PC = obtenerPC();
-                do{
-                this.IR = this.PC;
-                this.PC = this.PC+4;
-
-                if(!estaEnCache(this.IR,Integer.parseInt(this.getName()))){
-                    resolverFalloCache(this.IR,Integer.parseInt(this.getName()));
-                }*/
-               // ejecutarInstruccion();
-                try {
-                    barrera();
-                } catch (InterruptedException | BrokenBarrierException ex) {
-                    Logger.getLogger(ProyectoArqui.class.getName()).log(Level.SEVERE, null, ex);
-                }
-
 
               //  }while(true);
 
@@ -309,57 +337,3 @@ public class ProyectoArqui extends Thread{
 
 }
 
-/**
- * EJEMPLO DE COMO SINCRONIZAR VARAS JAJAJA
- *
-package pruebashilos;
-import java.util.concurrent.BrokenBarrierException;
-import java.util.concurrent.CyclicBarrier;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-
-public class PruebasHilos extends Thread{
-
-
-    public static int [] m_vector = new int[2];
-    public static CyclicBarrier barrier = new CyclicBarrier(3);
-
-    public static synchronized void ponerNumeroEnVector(int i ){
-        m_vector[i] = i;
-    }
-
-    public static void imprimirVector(){
-        System.out.println("Imprimiendo vector");
-        for(int i =0; i< m_vector.length;++i){
-            System.out.print(m_vector[i]+", ");
-        }
-    }
-    public static void  barrera() throws InterruptedException, BrokenBarrierException{
-        barrier.await();
-    }
-    public static void main(String[] args) throws InterruptedException, BrokenBarrierException {
-
-        System.out.println(Thread.currentThread().getName());
-        for(int i=0; i<2; i++){
-          new Thread("" + i){
-            public void run(){
-              System.out.println("Thread: " + getName() + " running");
-              ponerNumeroEnVector(Integer.parseInt(getName()));
-                try {
-                    barrera();
-                } catch (InterruptedException | BrokenBarrierException ex) {
-                    Logger.getLogger(PruebasHilos.class.getName()).log(Level.SEVERE, null, ex);
-                }
-            }
-
-          }.start();
-
-        }
-        barrier.await();
-        imprimirVector();
-
-    }
-
-}
-
- */
