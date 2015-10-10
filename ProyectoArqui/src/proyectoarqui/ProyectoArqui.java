@@ -32,7 +32,7 @@ public class ProyectoArqui extends Thread{
 
 
     // Esto es todo lo que se comparte
-    public static Semaphore bus;
+    public static Semaphore bus = new Semaphore(1);
     public static int[] memoriaInstrucciones = new int[640];
     public static int[] memoriaDatos = new int [88];
     public static CyclicBarrier barrier = new CyclicBarrier(3);
