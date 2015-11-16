@@ -193,11 +193,11 @@ public class EntradaSimulacion extends javax.swing.JFrame {
         quantum = Integer.parseInt(entrada_quantum.getText());
         m = Integer.parseInt(entrada_latencia.getText());
         b = Integer.parseInt(entrada_transferencia.getText());
-        ProyectoArqui simulacion = new ProyectoArqui(quantum, m, b, path);
+//        ProyectoArqui simulacion = new ProyectoArqui(quantum, m, b, path);
         this.setVisible(false);
         //Salida interfaz = new Salida();
         //interfaz.setVisible(true);
-        simulacion.run();
+      //  simulacion.run();
     }//GEN-LAST:event_IniciarActionPerformed
 
     private String path;
