@@ -1020,10 +1020,13 @@ public class Salida extends javax.swing.JFrame{
                     }
                     
                     public void store(int numNucleo, int[]laInstruccion, int bloque){
-                        int regAGuardar = laInstruccion[2];
+                        int regData = laInstruccion[2];
+                        int numero_palabra=0;
                         
                         if (numNucleo == 0){ //Es Nucleo 1
                             int direccionMem = registrosNucleo1[laInstruccion[1]] + laInstruccion[3] + 640;
+                            int numero_bloque = (direccionMem/4)%8;
+                            numero_palabra = direccionMem%4;
                             boolean termine = false;
                             //Pido mi cache
                             while(!termine){
@@ -1038,10 +1041,22 @@ public class Salida extends javax.swing.JFrame{
                                     if (!estaEnCacheDatos(direccionMem, numNucleo)){
                                         //Si es un fallo, lo resuelvo
                                         if (resolverFalloCacheDatos(direccionMem, bloque, numNucleo)){
-                                            //AQUI SE HACE EL STORE
+                                            //AQUI SE HACE EL STORE 
+                                            int palabra = registrosNucleo1[regData];  
+                                            cacheDatosNucleo1[numero_bloque][numero_palabra]= palabra ;
                                         }
-
+                                            
+                                    }else{
+                                        if(estaModificado(numero_bloque, numNucleo)){
+                                            int palabra = registrosNucleo1[regData];  
+                                            cacheDatosNucleo1[numero_bloque][numero_palabra]= palabra ;
+                                        }
+                                        else{// si no, esta compartido
+                                            BloqueAInvalidar m_bloque = new BloqueAInvalidar(numero_bloque,0);
+                                             bloquesAInvalidar.add(m_bloque);
+                                        }
                                     }
+                       
                                     s_cacheDatosNucleo1.release(); 
                                 }
                                 else {
@@ -1056,8 +1071,9 @@ public class Salida extends javax.swing.JFrame{
                             
                         }
                         else { //Es Nucleo 2
-                            
                             int direccionMem = registrosNucleo2[laInstruccion[1]] + laInstruccion[3] + 640;
+                            int numero_bloque = (direccionMem/4)%8;
+                            numero_palabra = direccionMem%4;
                             boolean termine = false;
                             //Pido mi cache
                             while(!termine){
@@ -1069,12 +1085,23 @@ public class Salida extends javax.swing.JFrame{
                                         Logger.getLogger(Salida.class.getName()).log(Level.SEVERE, null, ex);
                                     }
                                     //Tengo mi cache y verifico si es un hit
-                                    if (!estaEnCacheDatos(direccionMem, numNucleo)){
-                                        //Si es un fallo, lo resuelvo.
-                                        if(resolverFalloCacheDatos(direccionMem, bloque, numNucleo)){
-                                           //AQUI SE HACE EL STORE 
+                                   if (!estaEnCacheDatos(direccionMem, numNucleo)){
+                                        //Si es un fallo, lo resuelvo
+                                        if (resolverFalloCacheDatos(direccionMem, bloque, numNucleo)){
+                                            //AQUI SE HACE EL STORE 
+                                            int palabra = registrosNucleo2[regData];  
+                                            cacheDatosNucleo2[numero_bloque][numero_palabra]= palabra ;
                                         }
-                                        
+                                            
+                                    }else{
+                                        if(estaModificado(numero_bloque, numNucleo)){
+                                            int palabra = registrosNucleo2[regData];  
+                                            cacheDatosNucleo2[numero_bloque][numero_palabra]= palabra ;
+                                        }
+                                        else{// si no, esta compartido
+                                            BloqueAInvalidar m_bloque = new BloqueAInvalidar(numero_bloque,1);
+                                             bloquesAInvalidar.add(m_bloque);
+                                        }
                                     }
                                     s_cacheDatosNucleo2.release(); 
                                 }
