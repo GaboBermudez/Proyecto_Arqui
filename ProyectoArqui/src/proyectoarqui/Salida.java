@@ -818,12 +818,15 @@ public class Salida extends javax.swing.JFrame{
             while(!bloquesAInvalidar.isEmpty()){
                 BloqueAInvalidar bloque_temp = bloquesAInvalidar.poll();
                 int cache = bloque_temp.getCache();
-                int bloque = bloque_temp.getBloque();
+                int bloque = bloque_temp.getBloque()%8;
+                int bloque_mem = bloque_temp.getBloque();
                 if(cache == 0){ //Es la cache de datos del nucleo 1
-                    cacheDatosNucleo1[bloque][5] = -1;
+                    if(cacheDatosNucleo1[bloque][4] == bloque_mem)
+                        cacheDatosNucleo1[bloque][5] = -1;
                 }
                 else { //Es la cache de datos del nucleo 2
-                    cacheDatosNucleo2[bloque][5] = -1;
+                    if(cacheDatosNucleo2[bloque][4] == bloque_mem)
+                        cacheDatosNucleo2[bloque][5] = -1;
                 }
             }
         }
@@ -1271,7 +1274,7 @@ public class Salida extends javax.swing.JFrame{
                                             memoriaDatos[direccionMem+i] = cacheDatosNucleo2[numBloque][i];
                                         }
                                         //Manda a invalidar ese bloque en la cache del nucleo 2.
-                                        BloqueAInvalidar bloqueInvalido = new BloqueAInvalidar(numBloque,1);
+                                        BloqueAInvalidar bloqueInvalido = new BloqueAInvalidar((direccionMem/4),1);
                                         bloquesAInvalidar.add(bloqueInvalido);
                                     }
                                     //Si no esta modificado, esta compartido
@@ -1323,7 +1326,7 @@ public class Salida extends javax.swing.JFrame{
                                             memoriaDatos[direccionMem+i] = cacheDatosNucleo1[numBloque][i];
                                         }
                                         //Manda a invalidar ese bloque en la cache del nucleo 1.
-                                        BloqueAInvalidar bloqueInvalido = new BloqueAInvalidar(numBloque,0);
+                                        BloqueAInvalidar bloqueInvalido = new BloqueAInvalidar((direccionMem/4),0);
                                         bloquesAInvalidar.add(bloqueInvalido);
                                     }
                                     //Si no esta modificado, esta compartido
