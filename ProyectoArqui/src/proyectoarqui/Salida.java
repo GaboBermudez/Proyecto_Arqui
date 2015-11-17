@@ -1275,24 +1275,24 @@ public class Salida extends javax.swing.JFrame{
                                         bloquesAInvalidar.add(bloqueInvalido);
                                     }
                                     //Si no esta modificado, esta compartido
-                                    int numBloque = direccionMem % 8;
-                                    for (int i = 0; i < 4; i++){
-                                        cacheDatosNucleo1[numBloque][i] = memoriaDatos[direccionMem+i];
-                                    }
-                                    cacheDatosNucleo1[numBloque][4] = bloque;
-                                    cacheDatosNucleo1[numBloque][5] = 1;
-                                    //Espera los ciclos de reloj que dura transmitiendo
-                                    for(int k =0 ; k<(4*(b+m+b));++k){
-                                        try {
-                                            barrera();
-                                            barrera();
-                                        } catch (InterruptedException | BrokenBarrierException ex) {
-                                            Logger.getLogger(ProyectoArqui.class.getName()).log(Level.SEVERE, null, ex);
-                                        }
-                                    }
-                                    exito = true;
                                 }
                                 s_cacheDatosNucleo2.release();
+                                int numBloque = direccionMem % 8;
+                                for (int i = 0; i < 4; i++){
+                                    cacheDatosNucleo1[numBloque][i] = memoriaDatos[direccionMem+i];
+                                }
+                                cacheDatosNucleo1[numBloque][4] = bloque;
+                                cacheDatosNucleo1[numBloque][5] = 1;
+                                //Espera los ciclos de reloj que dura transmitiendo
+                                for(int k =0 ; k<(4*(b+m+b));++k){
+                                    try {
+                                        barrera();
+                                        barrera();
+                                    } catch (InterruptedException | BrokenBarrierException ex) {
+                                        Logger.getLogger(ProyectoArqui.class.getName()).log(Level.SEVERE, null, ex);
+                                    }
+                                }
+                                exito = true;
                             }
                             busDatos.release();
                         }
@@ -1327,24 +1327,24 @@ public class Salida extends javax.swing.JFrame{
                                         bloquesAInvalidar.add(bloqueInvalido);
                                     }
                                     //Si no esta modificado, esta compartido
-                                    int numBloque = direccionMem % 8;
-                                    for (int i = 0; i < 4; i++){
-                                        cacheDatosNucleo2[numBloque][i] = memoriaDatos[direccionMem+i];
-                                    }
-                                    cacheDatosNucleo2[numBloque][4] = bloque;
-                                    cacheDatosNucleo2[numBloque][5] = 1;
-                                    //Espera los ciclos de reloj que dura transmitiendo
-                                    for(int k =0 ; k<(4*(b+m+b));++k){
-                                        try {
-                                            barrera();
-                                            barrera();
-                                        } catch (InterruptedException | BrokenBarrierException ex) {
-                                            Logger.getLogger(ProyectoArqui.class.getName()).log(Level.SEVERE, null, ex);
-                                        }
-                                    }
-                                    exito = true;
                                 }
                                 s_cacheDatosNucleo1.release();
+                                int numBloque = direccionMem % 8;
+                                for (int i = 0; i < 4; i++){
+                                    cacheDatosNucleo2[numBloque][i] = memoriaDatos[direccionMem+i];
+                                }
+                                cacheDatosNucleo2[numBloque][4] = bloque;
+                                cacheDatosNucleo2[numBloque][5] = 1;
+                                //Espera los ciclos de reloj que dura transmitiendo
+                                for(int k =0 ; k<(4*(b+m+b));++k){
+                                    try {
+                                        barrera();
+                                        barrera();
+                                    } catch (InterruptedException | BrokenBarrierException ex) {
+                                        Logger.getLogger(ProyectoArqui.class.getName()).log(Level.SEVERE, null, ex);
+                                    }
+                                }
+                                exito = true;
                             }
                             busDatos.release();
                         }
