@@ -1075,8 +1075,14 @@ public class Salida extends javax.swing.JFrame{
                                         }
                                             
                                     }else{
-                                        int palabra = cacheDatosNucleo1[numero_bloque][numero_palabra];  
-                                            registrosNucleo1[regAGuardar]= palabra ;
+                                        if(estaModificado(numero_bloque, numNucleo)){
+                                             int palabra = cacheDatosNucleo1[numero_bloque][numero_palabra];  
+                                             registrosNucleo1[regAGuardar]= palabra ;
+                                        }
+                                        else{// si no, esta compartido
+                                            BloqueAInvalidar m_bloque = new BloqueAInvalidar(numero_bloque,0);
+                                             bloquesAInvalidar.add(m_bloque);
+                                        }
                                     }
                        
                                     s_cacheDatosNucleo1.release(); 
@@ -1093,8 +1099,9 @@ public class Salida extends javax.swing.JFrame{
                             
                         }
                         else { //Es Nucleo 2
-                            
                             int direccionMem = registrosNucleo2[laInstruccion[1]] + laInstruccion[3] + 640;
+                            int numero_bloque = (direccionMem/4)%8;
+                            numero_palabra = direccionMem%4;
                             boolean termine = false;
                             //Pido mi cache
                             while(!termine){
@@ -1106,12 +1113,23 @@ public class Salida extends javax.swing.JFrame{
                                         Logger.getLogger(Salida.class.getName()).log(Level.SEVERE, null, ex);
                                     }
                                     //Tengo mi cache y verifico si es un hit
-                                    if (!estaEnCacheDatos(direccionMem, numNucleo)){
-                                        //Si es un fallo, lo resuelvo.
-                                        if(resolverFalloCacheDatos(direccionMem, bloque, numNucleo)){
-                                            //AQUI SE HACE EL LOAD
+                                   if (!estaEnCacheDatos(direccionMem, numNucleo)){
+                                        //Si es un fallo, lo resuelvo
+                                        if (resolverFalloCacheDatos(direccionMem, bloque, numNucleo)){
+                                            //AQUI SE HACE EL LOAD 
+                                            int palabra = cacheDatosNucleo1[numero_bloque][numero_palabra];  
+                                            registrosNucleo1[regAGuardar]= palabra ;
                                         }
-                                        
+                                            
+                                    }else{
+                                        if(estaModificado(numero_bloque, numNucleo)){
+                                             int palabra = cacheDatosNucleo2[numero_bloque][numero_palabra];  
+                                             registrosNucleo2[regAGuardar]= palabra ;
+                                        }
+                                        else{// si no, esta compartido
+                                            BloqueAInvalidar m_bloque = new BloqueAInvalidar(numero_bloque,1);
+                                             bloquesAInvalidar.add(m_bloque);
+                                        }
                                     }
                                     s_cacheDatosNucleo2.release(); 
                                 }
@@ -1347,6 +1365,10 @@ public class Salida extends javax.swing.JFrame{
                                 break;
                             case 14:
                                 registrosNucleo1[instruccion[3]] = registrosNucleo1[instruccion[1]]/registrosNucleo1[instruccion[2]];
+                                break;
+                            case 35:
+                                int bloque = 0 ;// por que se tiene que enviar esto?, no se puede calcular en el metodo el numero de bloque
+                                load( nucleo, instruccion, bloque );
                             case 4:
                                 if(registrosNucleo1[instruccion[1]]==0){
                                     PCN1 += (4*instruccion[3]);
