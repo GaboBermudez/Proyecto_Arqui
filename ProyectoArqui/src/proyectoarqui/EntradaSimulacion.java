@@ -168,13 +168,19 @@ public class EntradaSimulacion extends javax.swing.JFrame {
         
     fileChooser = new JFileChooser(); 
     fileChooser.setCurrentDirectory(new java.io.File("."));
-    fileChooser.setDialogTitle("Seleccione la carpeta donde se encuentran los hilos");
-    fileChooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+    //fileChooser.setDialogTitle("Seleccione la carpeta donde se encuentran los hilos");
+    //fileChooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+    fileChooser.setMultiSelectionEnabled(true);
+    fileChooser.showOpenDialog(this);
+    File[] rutas = fileChooser.getSelectedFiles();
+    files = new File[rutas.length];
+    System.arraycopy(rutas, 0, files, 0, rutas.length);
     //
     // disable the "All files" option.
     //
-    fileChooser.setAcceptAllFileFilterUsed(false);
-    //    
+    //fileChooser.setAcceptAllFileFilterUsed(false);
+    //  
+    /*
     if (fileChooser.showOpenDialog(this) == JFileChooser.APPROVE_OPTION) { 
         
       path = fileChooser.getSelectedFile().getPath();
@@ -185,7 +191,7 @@ public class EntradaSimulacion extends javax.swing.JFrame {
     else {
       System.out.println("No Selection ");
       }
-        
+     */  
     }//GEN-LAST:event_AbrirActionPerformed
 
     private void IniciarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_IniciarActionPerformed
@@ -195,17 +201,17 @@ public class EntradaSimulacion extends javax.swing.JFrame {
         b = Integer.parseInt(entrada_transferencia.getText());
 //        ProyectoArqui simulacion = new ProyectoArqui(quantum, m, b, path);
         this.setVisible(false);
-        //Salida interfaz = new Salida();
-        //interfaz.setVisible(true);
-      //  simulacion.run();
+        Salida interfaz = new Salida(files);
+        interfaz.setVisible(true);
+        interfaz.iniciar();
     }//GEN-LAST:event_IniciarActionPerformed
 
-    private String path;
+    private static File[] files;
     
     /**
      * @param args the command line arguments
      */
-    public static void iniciar(String args[]) {
+    public static void main(String args[]) {
         /* Set the Nimbus look and feel */
         //<editor-fold defaultstate="collapsed" desc=" Look and feel setting code (optional) ">
         /* If Nimbus (introduced in Java SE 6) is not available, stay with the default look and feel.

@@ -6,8 +6,11 @@
 package proyectoarqui;
 
 
+import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
 import java.io.FileWriter;
 
 import java.io.IOException;
@@ -35,12 +38,15 @@ import javax.swing.SwingWorker;
  * @author b10141
  */
 public class Salida extends javax.swing.JFrame{
-
+    private static File[] rutas;
+    
     /**
      * Creates new form Salida
      */
-    public Salida() {
+    public Salida(File[] files) {
         initComponents();
+        rutas = new File[files.length];
+        System.arraycopy(files, 0, rutas, 0, files.length);
         //simulacion = laSimulacion;
     }
     
@@ -503,7 +509,7 @@ public class Salida extends javax.swing.JFrame{
     /**
      * @param args the command line arguments
      */
-    public static void main(String args[]) {
+    public static void iniciar() {
         /* Set the Nimbus look and feel */
         //<editor-fold defaultstate="collapsed" desc=" Look and feel setting code (optional) ">
         /* If Nimbus (introduced in Java SE 6) is not available, stay with the default look and feel.
@@ -535,10 +541,8 @@ public class Salida extends javax.swing.JFrame{
                // simulacion.run();
                //int m,b,quantum;
 
-                ProyectoArqui simulacion = new ProyectoArqui(2, 2, 2, "C:\\Users\\Ricardo Aguilar\\Desktop\\HILOS 1ERA PARTE - V4");
-                //this.setVisible(true);
-                Salida interfaz = new Salida();
-                interfaz.setVisible(true);
+                ProyectoArqui simulacion = new ProyectoArqui(2, 2, 2, rutas);
+                
                 simulacion.execute();
             }
         });
@@ -590,7 +594,7 @@ public class Salida extends javax.swing.JFrame{
         public static int[] vectorPCs = new int[2];
         public static int clock;
         public static LinkedList<BloqueAInvalidar> bloquesAInvalidar = new LinkedList<>();
-        public static String path;
+        public static File[] files;
         public static boolean estaOcupadoN1;
         public static boolean estaOcupadoN2;
         public static int[][] cacheInstruccionesNucleo1 = new int [8][17];
@@ -617,12 +621,20 @@ public class Salida extends javax.swing.JFrame{
 
         
 
-        public ProyectoArqui(int quantum, int m, int b, String path){
+        public ProyectoArqui(int quantum, int m, int b, File[] rutas){
+            for(File archivo : rutas){
+                System.out.println(archivo.getParentFile().getAbsolutePath());
+            }
             QuantumIngresado = quantum;
             this.m = m;
             this.b = b;
-            this.path = path;
+            files = new File[rutas.length];
+            System.arraycopy(rutas, 0, files, 0, rutas.length);
+            for(File archivo : files){
+                System.out.println(archivo.getAbsolutePath());
+            }
             pool = Executors.newFixedThreadPool(2);
+            cargarMemoriaDatos();
         }
 
 
@@ -691,44 +703,45 @@ public class Salida extends javax.swing.JFrame{
 
             int bloqueMemoria = 0;
             int PC = 0;
-            for(int i = 1; i <= 6; ++i){
+            int i = 0;
+            for (File file : files){
+                System.out.println(file.getName());
+                FileReader fr = null;
                 try {
-                Path filePath = Paths.get(path+"/"+i+".txt");
-                Scanner scanner = new Scanner(filePath);
-                List<Integer> instrucciones = new ArrayList<>();
-                while (scanner.hasNext()) {
-                    if (scanner.hasNextInt()) {
-                        instrucciones.add(scanner.nextInt());
-                    } else {
-                    scanner.next();
-                  }
-                }
-
-                String palabra = "";
-                for(int ins : instrucciones){
-                    palabra +=+ins+" ";
-                    if(((bloqueMemoria+1)%4)==0){
-                      //  System.out.println("palabra " + palabra);
-                        palabra = "";
-                    }
-                    memoriaInstrucciones[bloqueMemoria] = ins;
-                    ++bloqueMemoria;
-                }
-
-                } catch (IOException ex) {
-                    Logger.getLogger(ProyectoArqui.class.getName()).log(Level.SEVERE, null, ex);
-                }
-                int[] reg = new int[32];
-                Arrays.fill(reg,0);
-                Contexto contexto = new Contexto(reg, PC,i);
-               // System.out.println("PC contexto "+i+": "+bloqueMemoria);
-                colaContextos.add(contexto);
-                colaProcesos.add(i);
-                PC = bloqueMemoria;
+                    List<Integer> instrucciones = new ArrayList<>();
+                    fr = new FileReader(file);
+                    BufferedReader br= new BufferedReader(fr);
+                    String linea="";
+                    //while((linea = br.readLine()) != null){
+                        instrucciones.add(Integer.parseInt(linea));
+                    //}   
+                    String palabra = "";
+                    for(int ins : instrucciones){
+                        palabra +=+ins+" ";
+                        if(((bloqueMemoria+1)%4)==0){
+                            //  System.out.println("palabra " + palabra);
+                            palabra = "";
+                        }
+                        memoriaInstrucciones[bloqueMemoria] = ins;
+                        ++bloqueMemoria;
+                    }   int[] reg = new int[32];
+                    Arrays.fill(reg,0);
+                    Contexto contexto = new Contexto(reg, PC,i);
+                    // System.out.println("PC contexto "+i+": "+bloqueMemoria);
+                    colaContextos.add(contexto);
+                    colaProcesos.add(i);
+                    PC = bloqueMemoria;
+                    i++;
+                } catch (FileNotFoundException ex) {
+                    Logger.getLogger(Salida.class.getName()).log(Level.SEVERE, null, ex);
+                } 
+                System.out.println("Termine el for");
             }
+                
+               
 
 
-            for(int i =0 ; i < memoriaInstrucciones.length; ++i){
+            for(i =0 ; i < memoriaInstrucciones.length; ++i){
                 System.out.print(memoriaInstrucciones[i]+" ");
                 if(i%16 == 0 && i!=0 ){System.out.println();}
             }
@@ -765,6 +778,13 @@ public class Salida extends javax.swing.JFrame{
                 cacheInstruccionesNucleo2[j][16] = -1;
             }
             estaOcupadoN2 = true;
+        }
+        
+        
+        public static void cargarMemoriaDatos(){
+            for(int i = 0; i < 1408; i++){
+                memoriaDatos[i] = 1;
+            }
         }
 
 
@@ -903,10 +923,9 @@ public class Salida extends javax.swing.JFrame{
          * @param args
          * @throws IOException 
          */
-            String rutaN1 = path+"/bitacoraNucleo1.txt";
-            String rutaN2 = path+"/bitacoraNucleo2.txt";
-            //m_salida.setVisible(true);
-
+            
+            String rutaN1 = rutas[0].getParentFile().getName() + "\\bitacoraN1.txt";
+            String rutaN2 = rutas[0].getParentFile().getName() + "\\bitacoraN2.txt";
 
             File archivo1 = new File(rutaN1);
             File archivo2 = new File(rutaN2);
@@ -1448,6 +1467,7 @@ public class Salida extends javax.swing.JFrame{
                                 registrosNucleo1[instruccion[3]] = registrosNucleo1[instruccion[1]]/registrosNucleo1[instruccion[2]];
                                 break;
                             case 35:
+                                
                                 load( nucleo, instruccion, bloque );
                                 break;
                             case 43:
@@ -1553,7 +1573,8 @@ public class Salida extends javax.swing.JFrame{
                             case 51:
                                 if(registrosNucleo2[RL]==instruccion[3]+registrosNucleo2[instruccion[1]]){
                                     store(nucleo, instruccion,bloque);
-                                }else{
+                                }
+                                else{
                                     registrosNucleo2[instruccion[2]] = 0;
                                 }
                                 break;
@@ -1653,7 +1674,8 @@ public class Salida extends javax.swing.JFrame{
                                         escribirEnArchivo(str+="Quantum "+this.miQuantum);str="";
 
 
-                                    }else{
+                                    }
+                                    else{
                                         IRN2 = PCN2;
                                         System.out.println("PCN2 "+PCN2);
                                         int bloque = PCN2/16;
