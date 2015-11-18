@@ -597,8 +597,9 @@ public class Salida extends javax.swing.JFrame{
         public static int[][] cacheDatosNucleo1 = new int [6][8];
         public static int[][] cacheInstruccionesNucleo2 = new int [8][17];
         public static int[][] cacheDatosNucleo2 = new int [6][8];
-        public static int[] registrosNucleo1 = new int [32];
-        public static int[] registrosNucleo2 = new int [32];
+        public static int[] registrosNucleo1 = new int [33];
+        public static int[] registrosNucleo2 = new int [33];
+        public static final int RL = 32;
         public static int QuantumIngresado;
         private static int PCN1;
         private static int IRN1;
@@ -1423,7 +1424,8 @@ public class Salida extends javax.swing.JFrame{
                  * @param nucleo 
                  */
                 public  void  ejecutarInstruccion(int [] instruccion, int nucleo) throws IOException{
-
+                     int bloque = 0 ;// por que se tiene que enviar esto?, no se puede calcular en el metodo el numero de bloque
+                                
                     if(nucleo == 0){                       
 
                         switch(instruccion[0]){
@@ -1446,8 +1448,12 @@ public class Salida extends javax.swing.JFrame{
                                 registrosNucleo1[instruccion[3]] = registrosNucleo1[instruccion[1]]/registrosNucleo1[instruccion[2]];
                                 break;
                             case 35:
-                                int bloque = 0 ;// por que se tiene que enviar esto?, no se puede calcular en el metodo el numero de bloque
                                 load( nucleo, instruccion, bloque );
+                                break;
+                            case 43:
+                      
+                                store(nucleo, instruccion, bloque);
+                                break;
                             case 4:
                                 if(registrosNucleo1[instruccion[1]]==0){
                                     PCN1 += (4*instruccion[3]);
@@ -1464,6 +1470,17 @@ public class Salida extends javax.swing.JFrame{
                                 break;
                             case 2:
                                 PCN1 = registrosNucleo1[instruccion[1]];
+                                break;
+                            case 50:
+                                load(nucleo, instruccion, bloque);
+                                registrosNucleo1[RL]= instruccion[3]+registrosNucleo1[instruccion[1]];
+                                break;
+                            case 51:
+                                if(registrosNucleo1[RL]==instruccion[3]+registrosNucleo1[instruccion[1]]){
+                                    store(nucleo, instruccion,bloque);
+                                }else{
+                                    registrosNucleo1[instruccion[2]] = 0;
+                                }
                                 break;
                             case 63:
                                 System.out.println("Se termina de ejecutar el hilo");
@@ -1504,6 +1521,14 @@ public class Salida extends javax.swing.JFrame{
                             case 14:
                                 registrosNucleo2[instruccion[3]] = registrosNucleo2[instruccion[1]]/registrosNucleo2[instruccion[2]];
                                 break;
+                                
+                            case 35:
+                                load( nucleo, instruccion, bloque );
+                                break;
+                            case 43:
+                      
+                                store(nucleo, instruccion, bloque);
+                                break;    
                             case 4:
                                 if(registrosNucleo2[instruccion[1]]==0){
                                     PCN2 += (4*instruccion[3]);
@@ -1520,6 +1545,17 @@ public class Salida extends javax.swing.JFrame{
                                 break;
                             case 2:
                                 PCN2 = registrosNucleo2[instruccion[1]];
+                                break;
+                            case 50:
+                                load(nucleo, instruccion, bloque);
+                                registrosNucleo2[RL]= instruccion[3]+registrosNucleo2[instruccion[1]];
+                                break;
+                            case 51:
+                                if(registrosNucleo2[RL]==instruccion[3]+registrosNucleo2[instruccion[1]]){
+                                    store(nucleo, instruccion,bloque);
+                                }else{
+                                    registrosNucleo2[instruccion[2]] = 0;
+                                }
                                 break;
                             case 63:
                                 System.out.println("Se termina de ejecutar el hilo");
