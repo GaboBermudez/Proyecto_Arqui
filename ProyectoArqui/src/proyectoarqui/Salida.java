@@ -541,7 +541,7 @@ public class Salida extends javax.swing.JFrame{
                // simulacion.run();
                //int m,b,quantum;
 
-                ProyectoArqui simulacion = new ProyectoArqui(2, 2, 2, rutas);
+                ProyectoArqui simulacion = new ProyectoArqui(4, 2, 1, rutas);
                 
                 simulacion.execute();
             }
@@ -704,42 +704,98 @@ public class Salida extends javax.swing.JFrame{
             int bloqueMemoria = 0;
             int PC = 0;
             int i = 0;
+            File hiloPrincipal = new File("");
             for (File file : files){
-                System.out.println(file.getName());
-                FileReader fr = null;
-                try {
-                    List<Integer> instrucciones = new ArrayList<>();
-                    fr = new FileReader(file);
-                    BufferedReader br= new BufferedReader(fr);
-                    String linea="";
-                    //while((linea = br.readLine()) != null){
-                        instrucciones.add(Integer.parseInt(linea));
-                    //}   
-                    String palabra = "";
-                    for(int ins : instrucciones){
-                        palabra +=+ins+" ";
-                        if(((bloqueMemoria+1)%4)==0){
-                            //  System.out.println("palabra " + palabra);
-                            palabra = "";
+                if(file.getName().compareToIgnoreCase("hilo-pr.txt") != 0){
+                    System.out.println(file.getName());
+                    FileReader fr = null;
+                    try {
+                        List<Integer> instrucciones = new ArrayList<>();
+                        fr = new FileReader(file);
+                        BufferedReader br= new BufferedReader(fr);
+                        String linea="";
+                        try {
+                            while((linea = br.readLine()) != null){
+                                String[] instrucciones_array = linea.split("\\s+");
+                                for (String str : instrucciones_array){
+                                    if(!str.equals("")){
+                                        instrucciones.add(Integer.parseInt(str));   
+                                    }
+                                }
+                            }
+                        } catch (IOException ex) {
+                            Logger.getLogger(Salida.class.getName()).log(Level.SEVERE, null, ex);
                         }
-                        memoriaInstrucciones[bloqueMemoria] = ins;
-                        ++bloqueMemoria;
-                    }   int[] reg = new int[32];
-                    Arrays.fill(reg,0);
-                    Contexto contexto = new Contexto(reg, PC,i);
-                    // System.out.println("PC contexto "+i+": "+bloqueMemoria);
-                    colaContextos.add(contexto);
-                    colaProcesos.add(i);
-                    PC = bloqueMemoria;
-                    i++;
-                } catch (FileNotFoundException ex) {
-                    Logger.getLogger(Salida.class.getName()).log(Level.SEVERE, null, ex);
-                } 
-                System.out.println("Termine el for");
+                        String palabra = "";
+                        for(int ins : instrucciones){
+                            palabra +=+ins+" ";
+                            if(((bloqueMemoria+1)%4)==0){
+                                //  System.out.println("palabra " + palabra);
+                                palabra = "";
+                            }
+                            memoriaInstrucciones[bloqueMemoria] = ins;
+                            ++bloqueMemoria;
+                        }   
+                        int[] reg = new int[32];
+                        Arrays.fill(reg,0);
+                        Contexto contexto = new Contexto(reg, PC,i);
+                        // System.out.println("PC contexto "+i+": "+bloqueMemoria);
+                        colaContextos.add(contexto);
+                        colaProcesos.add(i);
+                        PC = bloqueMemoria;
+                        i++;
+                    } catch (FileNotFoundException ex) {
+                        Logger.getLogger(Salida.class.getName()).log(Level.SEVERE, null, ex);
+                    } 
+                    System.out.println("Termine el for");
+                }
+                else{
+                    hiloPrincipal = file;
+                }
             }
                 
-               
-
+            //Agrega el hilo principal de ultimo.
+            System.out.println(hiloPrincipal.getName());
+            FileReader fr = null;
+            try {
+                List<Integer> instrucciones = new ArrayList<>();
+                fr = new FileReader(hiloPrincipal);
+                BufferedReader br= new BufferedReader(fr);
+                String linea="";
+                try {
+                    while((linea = br.readLine()) != null){
+                        String[] instrucciones_array = linea.split("\\s+");
+                        for (String str : instrucciones_array){
+                            if(!str.equals("")){
+                                instrucciones.add(Integer.parseInt(str));   
+                            }
+                        }
+                    }
+                } catch (IOException ex) {
+                    Logger.getLogger(Salida.class.getName()).log(Level.SEVERE, null, ex);
+                }
+                String palabra = "";
+                for(int ins : instrucciones){
+                    palabra +=+ins+" ";
+                    if(((bloqueMemoria+1)%4)==0){
+                        //  System.out.println("palabra " + palabra);
+                        palabra = "";
+                    }
+                    memoriaInstrucciones[bloqueMemoria] = ins;
+                    ++bloqueMemoria;
+                }   
+                int[] reg = new int[32];
+                Arrays.fill(reg,0);
+                Contexto contexto = new Contexto(reg, PC,i);
+                // System.out.println("PC contexto "+i+": "+bloqueMemoria);
+                colaContextos.add(contexto);
+                colaProcesos.add(i);
+                PC = bloqueMemoria;
+                i++;
+            } catch (FileNotFoundException ex) {
+                Logger.getLogger(Salida.class.getName()).log(Level.SEVERE, null, ex);
+            } 
+            System.out.println("Termine el for");
 
             for(i =0 ; i < memoriaInstrucciones.length; ++i){
                 System.out.print(memoriaInstrucciones[i]+" ");
@@ -1164,6 +1220,7 @@ public class Salida extends javax.swing.JFrame{
                                     } catch (InterruptedException | BrokenBarrierException ex) {
                                         Logger.getLogger(Salida.class.getName()).log(Level.SEVERE, null, ex);
                                     }
+                                    System.out.println("Ya tengo mi cache N1");
                                     //Tengo mi cache y verifico si es un hit
                                     if (!estaEnCacheDatos(direccionMem, numNucleo)){
                                         //Si es un fallo, lo resuelvo
@@ -1211,6 +1268,7 @@ public class Salida extends javax.swing.JFrame{
                                     } catch (InterruptedException | BrokenBarrierException ex) {
                                         Logger.getLogger(Salida.class.getName()).log(Level.SEVERE, null, ex);
                                     }
+                                    System.out.println("Ya tengo mi cache N2");
                                     //Tengo mi cache y verifico si es un hit
                                    if (!estaEnCacheDatos(direccionMem, numNucleo)){
                                         //Si es un fallo, lo resuelvo
@@ -1253,8 +1311,9 @@ public class Salida extends javax.swing.JFrame{
                      */
                     public synchronized void resolverFalloCache(int PC, int etiqueta, int nucleo){
                     while(!bus.tryAcquire()){
-                        System.out.println("Nucleo "+nucleo+" no tiene el bus");
+                        //System.out.println("Nucleo "+nucleo+" no tiene el bus");
                         try {
+                            barrera();
                             barrera();
                         } catch (InterruptedException | BrokenBarrierException ex) {
                             Logger.getLogger(ProyectoArqui.class.getName()).log(Level.SEVERE, null, ex);
@@ -1492,6 +1551,7 @@ public class Salida extends javax.swing.JFrame{
                                 PCN1 = registrosNucleo1[instruccion[1]];
                                 break;
                             case 50:
+                                System.out.println("Entro al LL");
                                 load(nucleo, instruccion, bloque);
                                 registrosNucleo1[RL]= instruccion[3]+registrosNucleo1[instruccion[1]];
                                 break;
@@ -1567,6 +1627,7 @@ public class Salida extends javax.swing.JFrame{
                                 PCN2 = registrosNucleo2[instruccion[1]];
                                 break;
                             case 50:
+                                System.out.println("Entro al LL");
                                 load(nucleo, instruccion, bloque);
                                 registrosNucleo2[RL]= instruccion[3]+registrosNucleo2[instruccion[1]];
                                 break;
@@ -1663,7 +1724,7 @@ public class Salida extends javax.swing.JFrame{
                                         escribirEnArchivo(str);str="";
                                         PCN1 +=4;
                                         if(!estaEnCache(bloque, numNucleo)){
-                                            System.out.println("Hay fallo de cache con bloque "+bloque+" PC "+IRN1);
+                                            System.out.println("Hay fallo de cache con bloque "+bloque+" PC "+IRN1 + "N1");
                                             escribirEnArchivo("Hay fallo de cache con bloque "+bloque+" PC "+IRN1);
                                             resolverFalloCache(IRN1,bloque,numNucleo); 
                                             //escribirEnArchivo(obtenerCache(0));
@@ -1683,7 +1744,7 @@ public class Salida extends javax.swing.JFrame{
                                         escribirEnArchivo(str);str="";
                                         PCN2 +=4;
                                         if(!estaEnCache(bloque, numNucleo)){
-                                            System.out.println("Hay fallo de cache con bloque "+bloque+" PC "+IRN1);
+                                            System.out.println("Hay fallo de cache con bloque "+bloque+" PC "+IRN1 + "N2");
                                             escribirEnArchivo("Hay fallo de cache con bloque "+bloque);
                                             resolverFalloCache(IRN2,bloque,numNucleo); 
                                             //escribirEnArchivo(obtenerCache(1));
@@ -1701,13 +1762,13 @@ public class Salida extends javax.swing.JFrame{
                                     }
                                 }
                                 try {
-                                    System.out.println("Llegue a la barrera");
+                                    //System.out.println("Llegue a la barrera");
                                     barrera();
                                     barrera();
                                 } catch (InterruptedException | BrokenBarrierException ex) {
                                     Logger.getLogger(ProyectoArqui.class.getName()).log(Level.SEVERE, null, ex);
                                 }
-                                System.out.println(""+estoyOcupado);
+                                //System.out.println(""+estoyOcupado);
                             }
                             escribir1.close();
                             bw1.close();
@@ -1722,11 +1783,11 @@ public class Salida extends javax.swing.JFrame{
 
             while(estaOcupadoN1 || estaOcupadoN2){
                 try {
-                    System.out.println("Llegue a la barrera");
+                    //System.out.println("Llegue a la barrera");
                     barrera();
                     ++clock;
                     invalidarBloques();
-                    System.out.println("Actualizar reloj...");
+                    //System.out.println("Actualizar reloj...");
                     publish(clock);
                     if(modoLento){
                         Thread.sleep(100);
@@ -1741,7 +1802,11 @@ public class Salida extends javax.swing.JFrame{
             //System.out.println("Ya termine");
 
             //System.exit(0);
-         
+            for(int i =0 ; i < memoriaDatos.length; ++i){
+                System.out.print(memoriaDatos[i]+" ");
+                if(i%16 == 0 && i!=0 ){System.out.println();}
+            }
+            System.out.println();
             return null;    
         }
         
@@ -1769,16 +1834,18 @@ public class Salida extends javax.swing.JFrame{
                 }
                 //System.out.println();
             }
-            
+            /*
             //Set Registros
             for(int i =0;i<registrosNucleo1.length;++i){
+                //System.out.print(i+" ");
                 registrosN1.setValueAt(registrosNucleo1[i],i, 1);
             }    
+            //System.out.println();
         
             for(int i =0;i<registrosNucleo2.length;++i){
                 registrosN2.setValueAt(registrosNucleo2[i],i, 1);
             }  
-        
+            */
         }
         
     }
